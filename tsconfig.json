@@ -4,6 +4,13 @@
     "strict": true,
     "paths": {
       "@providers/*": ["./src/providers/*"],
+      "@data/*": ["./src/data/*"],
+      "@screens/*": ["./src/screens/*"],
+      "@interfaces/*": ["./src/interfaces/*"],
+      "@metrics/*": ["./src/metrics/*"],
+      "@context/*": ["./src/context/*"],
+      "@constants/*": ["./src/constants/*"],
+      "@components/*": ["./src/components/*"],
     }
   }
 }
