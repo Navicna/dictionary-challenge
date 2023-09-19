@@ -1,4 +1,6 @@
-import { fullHeight } from "@constants/metrics";
+import { fullHeight, fullWidth } from "@constants/metrics";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import {
   Box,
   Button,
@@ -7,27 +9,36 @@ import {
   IconButton,
   ChevronDownIcon,
   PlayIcon,
+  CheckCircleIcon,
 } from "native-base";
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { Screens, StackParams } from "@routes/types";
-import { TouchableOpacity } from "react-native";
+import { ActivityIndicator, TouchableOpacity, BackHandler } from "react-native";
 import * as Speech from "expo-speech";
 import { useAppData } from "@context/AppContext";
+import keys from "@constants/keys";
 
 const modalSize = fullHeight * 0.8;
 
 type ModalRoute = RouteProp<StackParams, Screens.Modal>;
 
 function Modal() {
-  const { data } = useAppData();
+  const { wordList, loadFavorites, favoriteList, loadHistory, historyList } =
+    useAppData();
   const route = useRoute<ModalRoute>();
 
   const [word, setWord] = useState(route.params.word);
+  const [historyDraft, setHistoryDraft] = useState<string[]>(historyList);
 
   const { goBack } = useNavigation();
 
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const isFavorite = useMemo(() => {
+    return favoriteList.includes(word);
+  }, [word, favoriteList]);
 
   const speak = async () => {
     setIsSpeaking(true);
@@ -39,34 +50,125 @@ function Modal() {
   };
 
   const findIndexWord = () => {
-    if (!data) {
+    if (!wordList) {
       return 0;
     }
 
-    return data.indexOf(word);
+    return wordList.indexOf(word);
   };
 
   const moveToNextWord = () => {
-    if (!data) {
+    if (!wordList) {
       return;
     }
 
     const currentIndex = findIndexWord();
-    if (currentIndex !== -1 && currentIndex < data.length - 1) {
-      setWord(data[currentIndex + 1]);
+    if (currentIndex !== -1 && currentIndex < wordList.length - 1) {
+      setWord(wordList[currentIndex + 1]);
     }
   };
 
   const moveToPreviousWord = () => {
-    if (!data) {
+    if (!wordList) {
       return;
     }
 
     const currentIndex = findIndexWord();
     if (currentIndex > 0) {
-      setWord(data[currentIndex - 1]);
+      setWord(wordList[currentIndex - 1]);
     }
   };
+
+  const addToHistory = async () => {
+    try {
+      if (historyList.length === historyDraft.length) {
+        return;
+      }
+
+      setIsLoading(true);
+
+      await AsyncStorage.setItem(keys.history, JSON.stringify(historyDraft));
+
+      loadHistory();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const addToFavorites = async () => {
+    try {
+      setIsLoading(true);
+
+      const favorites = await loadFavorites();
+
+      if (favorites.includes(word)) {
+        return;
+      }
+
+      favorites.push(word);
+      await AsyncStorage.setItem(keys.favorites, JSON.stringify(favorites));
+
+      loadFavorites();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const removeFromHistory = async () => {
+    try {
+      setIsLoading(true);
+      const history = await loadHistory();
+      const updatedHistory = history.filter((item) => item !== word);
+      await AsyncStorage.setItem(keys.history, JSON.stringify(updatedHistory));
+
+      loadHistory();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const removeFromFavorites = async () => {
+    try {
+      setIsLoading(true);
+      const favorites = await loadFavorites();
+      const updatedFavorites = favorites.filter((item) => item !== word);
+      await AsyncStorage.setItem(
+        keys.favorites,
+        JSON.stringify(updatedFavorites)
+      );
+
+      loadFavorites();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoBack = () => {
+    addToHistory();
+    goBack();
+  };
+
+  useEffect(() => {
+    const onBackPress = () => {
+      addToHistory();
+
+      return false;
+    };
+    BackHandler.addEventListener("hardwareBackPress", onBackPress);
+
+    return () =>
+      BackHandler.removeEventListener("hardwareBackPress", onBackPress);
+  }, []);
+
+  useEffect(() => {
+    loadHistory();
+  }, []);
+
+  useEffect(() => {
+    if (!historyList.includes(word)) {
+      setHistoryDraft((wl) => [...wl, word]);
+    }
+  }, [word]);
 
   return (
     <Box flex={1} justifyContent="flex-end" bgColor="rgba(0, 0, 0, 0.23)">
@@ -82,7 +184,7 @@ function Modal() {
         pl="14px"
       >
         <IconButton
-          onPress={goBack}
+          onPress={handleGoBack}
           position="absolute"
           top="16px"
           left="16px"
@@ -106,9 +208,44 @@ function Modal() {
             {word}
           </Text>
         </View>
-        <TouchableOpacity onPress={speak}>
-          <PlayIcon color="white" size="60px" mt="24px" />
-        </TouchableOpacity>
+
+        <View width={fullWidth}>
+          <TouchableOpacity
+            onPress={speak}
+            style={{
+              alignSelf: "center",
+            }}
+          >
+            <PlayIcon color="white" size="60px" mt="24px" />
+          </TouchableOpacity>
+
+          <View
+            position="absolute"
+            alignItems="center"
+            right="16px"
+            justifyContent="center"
+            top="24px"
+          >
+            {isLoading ? (
+              <View mr="12px" mt="12px">
+                <ActivityIndicator />
+              </View>
+            ) : (
+              <TouchableOpacity
+                onPress={isFavorite ? removeFromFavorites : addToFavorites}
+              >
+                <CheckCircleIcon
+                  color={isFavorite ? "emerald.500" : "white"}
+                  size="24px"
+                  alignSelf="center"
+                />
+                <Text color={isFavorite ? "emerald.500" : "white"}>
+                  Favorite!
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
 
         <View
           flexDirection="row"

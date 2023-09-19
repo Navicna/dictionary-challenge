@@ -3,7 +3,7 @@ import React from "react";
 import { View, Text } from "native-base";
 import { TouchableOpacity } from "react-native";
 
-function TextContainer({
+function WordContainer({
   onPress,
   children,
   numColumns = 3,
@@ -39,4 +39,4 @@ function TextContainer({
   );
 }
 
-export { TextContainer };
+export { WordContainer };

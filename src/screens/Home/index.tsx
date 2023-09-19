@@ -1,24 +1,40 @@
 import { FlatList, Text, View } from "native-base";
-import React, { useEffect, useRef, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { useNavigation } from "@react-navigation/native";
-import { FlatList as RNFlatList } from "react-native";
+import { useNavigation, useIsFocused } from "@react-navigation/native";
+import { FlatList as RNFlatList, TouchableOpacity } from "react-native";
 import { fullWidth, isAndroid } from "@constants/metrics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAppData } from "@context/AppContext";
 import { ArrowButton } from "@components/ArrowButton";
-import { TextContainer } from "@components/TextContainer";
+import { WordContainer } from "@components/WordContainer";
 
 import { Screens, StackParams } from "../../routes/types";
 import { FullScreenLoading } from "@components/FullScreenLoading";
+import { Tabs } from "@interfaces/index";
+import { TabBar } from "@components/TabBar";
+import keys from "@constants/keys";
 
 const numColumns = 3;
 
 function Home() {
-  const { data, isLoading, pageSize } = useAppData();
+  const {
+    wordList,
+    historyList,
+    favoriteList,
+    isLoading,
+    pageSize,
+    loadFavorites,
+    loadHistory,
+  } = useAppData();
 
   const [page, setPage] = useState(1);
+
+  const [activeTab, setActiveTab] = useState<Tabs>("Word list");
   const [words, setWords] = useState<string[] | null>([]);
+
+  const isFocused = useIsFocused();
 
   const { navigate } = useNavigation<StackNavigationProp<StackParams>>();
 
@@ -36,11 +52,11 @@ function Home() {
     const startIndex = page * pageSize;
     const endIndex = startIndex + pageSize;
 
-    if (!data) {
+    if (!wordList) {
       return;
     }
 
-    const actualData = data.slice(startIndex, endIndex);
+    const actualData = wordList.slice(startIndex, endIndex);
 
     if (words) {
       return setWords([...words, ...actualData]);
@@ -55,8 +71,8 @@ function Home() {
   };
 
   const handleLoadInitialWords = async () => {
-    if (data) {
-      setWords(data.slice(0, pageSize));
+    if (wordList) {
+      setWords(wordList.slice(0, pageSize));
     }
   };
 
@@ -66,29 +82,79 @@ function Home() {
     });
   };
 
+  const handleClear = async () => {
+    await AsyncStorage.removeItem(
+      activeTab === "Favorites" ? keys.favorites : keys.history
+    );
+
+    if (activeTab === "Favorites") {
+      loadFavorites();
+    }
+    if (activeTab === "History") {
+      loadHistory();
+    }
+  };
+
+  const data = useMemo(() => {
+    if (activeTab === "History") {
+      return historyList;
+    }
+    if (activeTab === "Favorites") {
+      return favoriteList;
+    }
+
+    return words;
+  }, [activeTab, words]);
+
   useEffect(() => {
     handleLoadInitialWords();
-  }, [!!data]);
+  }, [!!wordList, isLoading]);
 
-  if (isLoading) {
+  if (isLoading && isFocused) {
     return <FullScreenLoading />;
   }
 
   return (
-    <View alignItems="center" justifyContent="center" flex={1}>
+    <View alignItems="center" justifyContent="center" flex={1} bgColor="black">
       <FlatList
         ref={flatlistRef}
         ListHeaderComponent={() => {
           return (
-            <View
-              alignSelf="flex-start"
-              mt={isAndroid ? 4 : top * 2}
-              mb="24px"
-              pl="4"
-            >
-              <Text fontSize="3xl" fontWeight="bold" color="emerald.500">
-                Word list
-              </Text>
+            <View mt="24px">
+              <TabBar
+                onPress={(tab) => {
+                  setActiveTab(tab);
+                }}
+                activeTab={activeTab}
+              />
+              <View
+                justifyContent="space-between"
+                mt={isAndroid ? 4 : top * 2}
+                mb="24px"
+                pl="16px"
+                pr="16px"
+                flexDirection="row"
+                alignItems="center"
+              >
+                <Text fontSize="3xl" fontWeight="bold" color="emerald.500">
+                  {activeTab}
+                </Text>
+
+                {activeTab !== "Word list" && (
+                  <TouchableOpacity onPress={handleClear}>
+                    <Text
+                      fontSize="xs"
+                      fontWeight="bold"
+                      color="danger.400"
+                      mt="4px"
+                    >
+                      {activeTab === "Favorites"
+                        ? "Clear favorites"
+                        : "Clear history"}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
           );
         }}
@@ -96,17 +162,17 @@ function Home() {
         backgroundColor="black"
         width={fullWidth}
         keyExtractor={(_) => _}
-        data={words}
+        data={data}
         numColumns={numColumns}
         renderItem={({ item }) => {
           return (
-            <TextContainer
+            <WordContainer
               onPress={(word) => {
                 handleNavigate(word);
               }}
             >
               {item}
-            </TextContainer>
+            </WordContainer>
           );
         }}
         onScroll={(event) => {
