@@ -1,10 +1,13 @@
 import * as React from "react";
 
 import { fireEvent, render } from "@testing-library/react-native";
-import { ArrowButton } from "./index";
+import { ArrowButton } from "@components/ArrowButton";
 
 jest.mock("native-base", () => ({
   ...jest.requireActual("native-base"),
+  NativeBaseConfigProvider: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
 }));
 
 describe("ArrowButton", () => {
