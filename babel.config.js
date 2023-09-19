@@ -16,6 +16,8 @@ module.exports = function(api) {
             '@context': './src/context',
             '@constants': './src/constants',
             '@components': './src/components',
+            '@utils': './src/utils',
+            '@routes': './src/routes',
           },
         },
       ],

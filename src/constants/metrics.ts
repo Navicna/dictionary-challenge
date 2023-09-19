@@ -1,5 +1,8 @@
-import { Dimensions } from "react-native";
+import { Dimensions, Platform } from "react-native";
 
 const { height: fullHeight, width: fullWidth } = Dimensions.get("window");
 
-export { fullHeight, fullWidth };
+const isAndroid = Platform.OS === 'android'
+const isIos = Platform.OS === 'ios'
+
+export { fullHeight, fullWidth , isIos, isAndroid };

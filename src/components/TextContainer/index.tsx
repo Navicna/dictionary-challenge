@@ -1,16 +1,21 @@
 import { fullWidth } from "@constants/metrics";
 import React from "react";
 import { View, Text } from "native-base";
+import { TouchableOpacity } from "react-native";
 
 function TextContainer({
   onPress,
   children,
   numColumns = 3,
 }: {
-  onPress?(): void;
+  onPress(children: string): void;
   children: string;
   numColumns?: number;
 }) {
+  const handlePressWord = () => {
+    onPress(children);
+  };
+
   return (
     <View
       borderWidth={1}
@@ -20,14 +25,16 @@ function TextContainer({
       justifyContent="center"
       p="5"
     >
-      <Text
-        fontSize="xl"
-        color="purple.500"
-        fontWeight="bold"
-        textAlign="center"
-      >
-        {children}
-      </Text>
+      <TouchableOpacity onPress={handlePressWord}>
+        <Text
+          fontSize="xl"
+          color="purple.500"
+          fontWeight="bold"
+          textAlign="center"
+        >
+          {children}
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 }

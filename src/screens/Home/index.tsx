@@ -1,20 +1,26 @@
 import { FlatList, Text, View } from "native-base";
 import React, { useEffect, useRef, useState } from "react";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { useNavigation } from "@react-navigation/native";
 import { FlatList as RNFlatList } from "react-native";
-import { fullWidth } from "@constants/metrics";
+import { fullWidth, isAndroid } from "@constants/metrics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAppData } from "@context/AppContext";
 import { ArrowButton } from "@components/ArrowButton";
 import { TextContainer } from "@components/TextContainer";
 
+import { Screens, StackParams } from "../../routes/types";
+import { FullScreenLoading } from "@components/FullScreenLoading";
+
 const numColumns = 3;
 
 function Home() {
-  const { data, pageSize } = useAppData();
+  const { data, isLoading, pageSize } = useAppData();
 
   const [page, setPage] = useState(1);
   const [words, setWords] = useState<string[] | null>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const { navigate } = useNavigation<StackNavigationProp<StackParams>>();
 
   const flatlistRef = useRef<RNFlatList>(null);
 
@@ -48,19 +54,24 @@ function Home() {
     handleLoadWords();
   };
 
-  const handleReadJSONFile = async () => {
-    setIsLoading(true);
+  const handleLoadInitialWords = async () => {
     if (data) {
       setWords(data.slice(0, pageSize));
     }
-    setIsLoading(false);
+  };
+
+  const handleNavigate = (word: string) => {
+    navigate(Screens.Modal, {
+      word,
+    });
   };
 
   useEffect(() => {
-    handleReadJSONFile();
-  }, []);
+    handleLoadInitialWords();
+  }, [!!data]);
 
   if (isLoading) {
+    return <FullScreenLoading />;
   }
 
   return (
@@ -69,7 +80,12 @@ function Home() {
         ref={flatlistRef}
         ListHeaderComponent={() => {
           return (
-            <View alignSelf="flex-start" mt={top * 2} mb={top} pl="4">
+            <View
+              alignSelf="flex-start"
+              mt={isAndroid ? 4 : top * 2}
+              mb="24px"
+              pl="4"
+            >
               <Text fontSize="3xl" fontWeight="bold" color="emerald.500">
                 Word list
               </Text>
@@ -83,7 +99,15 @@ function Home() {
         data={words}
         numColumns={numColumns}
         renderItem={({ item }) => {
-          return <TextContainer>{item}</TextContainer>;
+          return (
+            <TextContainer
+              onPress={(word) => {
+                handleNavigate(word);
+              }}
+            >
+              {item}
+            </TextContainer>
+          );
         }}
         onScroll={(event) => {
           const { layoutMeasurement, contentOffset, contentSize } =

@@ -17,7 +17,7 @@ function ArrowButton({ onPress }: { onPress(): void }) {
       onPress={onPress}
     >
       <View
-        backgroundColor="black"
+        bgColor="#242424"
         borderRadius={size / 2}
         height={size}
         width={size}
