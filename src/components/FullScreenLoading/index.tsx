@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text } from "native-base";
+import { View } from "native-base";
 import { ActivityIndicator } from "react-native";
 
 function FullScreenLoading() {
@@ -9,6 +9,7 @@ function FullScreenLoading() {
       alignItems="center"
       justifyContent="center"
       bgColor="#242424"
+      testID="full-screen-loading"
     >
       <ActivityIndicator />
     </View>
