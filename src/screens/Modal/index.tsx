@@ -114,19 +114,6 @@ function Modal() {
     }
   };
 
-  const removeFromHistory = async () => {
-    try {
-      setIsLoading(true);
-      const history = await loadHistory();
-      const updatedHistory = history.filter((item) => item !== word);
-      await AsyncStorage.setItem(keys.history, JSON.stringify(updatedHistory));
-
-      loadHistory();
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const removeFromFavorites = async () => {
     try {
       setIsLoading(true);
@@ -154,10 +141,11 @@ function Modal() {
 
       return false;
     };
-    BackHandler.addEventListener("hardwareBackPress", onBackPress);
-
-    return () =>
-      BackHandler.removeEventListener("hardwareBackPress", onBackPress);
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      onBackPress
+    );
+    return () => backHandler.remove();
   }, []);
 
   useEffect(() => {
@@ -165,7 +153,7 @@ function Modal() {
   }, []);
 
   useEffect(() => {
-    if (!historyList.includes(word)) {
+    if (!historyList.includes(word) && !historyDraft.includes(word)) {
       setHistoryDraft((wl) => [...wl, word]);
     }
   }, [word]);
