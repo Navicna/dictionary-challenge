@@ -10,6 +10,7 @@ import {
   ChevronDownIcon,
   PlayIcon,
   CheckCircleIcon,
+  useToast,
 } from "native-base";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
@@ -27,6 +28,8 @@ function Modal() {
   const { wordList, loadFavorites, favoriteList, loadHistory, historyList } =
     useAppData();
   const route = useRoute<ModalRoute>();
+
+  const toast = useToast();
 
   const [word, setWord] = useState(route.params.word);
   const [historyDraft, setHistoryDraft] = useState<string[]>(historyList);
@@ -109,6 +112,11 @@ function Modal() {
       await AsyncStorage.setItem(keys.favorites, JSON.stringify(favorites));
 
       loadFavorites();
+
+      toast.show({
+        description: "Added to your favorites list!",
+        placement: "top",
+      });
     } finally {
       setIsLoading(false);
     }
