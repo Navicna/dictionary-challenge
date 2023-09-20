@@ -40,6 +40,9 @@ const AppProvider = ({ children }: { children: ReactNode }) => {
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  const [isLoadingCredentials, setIsLoadingCredentials] =
+    useState<boolean>(false);
+
   const toast = useToast();
 
   const pageSize = 96;
@@ -88,7 +91,7 @@ const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const validateToken = async () => {
-    setIsLoading(true);
+    setIsLoadingCredentials(true);
     if (!credentials) {
       const storedCredentials = await AsyncStorage.getItem(keys.credentials);
 
@@ -102,14 +105,14 @@ const AppProvider = ({ children }: { children: ReactNode }) => {
           setCredentials(parsedCredentials);
         }
       }
-      setIsLoading(false);
+      setIsLoadingCredentials(false);
       return;
     }
 
     const valid = isDateLessThanOrEqualToNextDay(credentials.createdAt);
 
     if (valid) {
-      setIsLoading(false);
+      setIsLoadingCredentials(false);
       return;
     }
 
@@ -118,7 +121,7 @@ const AppProvider = ({ children }: { children: ReactNode }) => {
       description: "Session expired!",
       placement: "top",
     });
-    setIsLoading(false);
+    setIsLoadingCredentials(false);
   };
 
   useEffect(() => {
@@ -159,7 +162,7 @@ const AppProvider = ({ children }: { children: ReactNode }) => {
     setCredentials,
   };
 
-  if (isLoading) {
+  if (isLoadingCredentials) {
     return <FullScreenLoading />;
   }
 
