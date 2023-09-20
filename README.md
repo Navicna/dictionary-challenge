@@ -10,6 +10,7 @@ Application developed with the purpose of displaying an extensive list of Englis
 - NodeJS
 - Jest
 - Context API
+- Native Base
 
 ## Getting started
 
