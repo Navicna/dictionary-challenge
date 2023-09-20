@@ -1,6 +1,6 @@
 # Dictionary
 
-This application was developed with the purpose of displaying an extensive list of English words. In it, you will have the ability to view your history of visited words, mark them as favorites, and even listen to their pronunciations.
+Application developed with the purpose of displaying an extensive list of English words. In it, you will have the ability to view your history of visited words, mark them as favorites, and even listen to their pronunciations.
 
 ### Tools/Technologies
 
