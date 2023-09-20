@@ -2,6 +2,12 @@
 
 Application developed with the purpose of displaying an extensive list of English words. In it, you will have the ability to view your history of visited words, mark them as favorites, and even listen to their pronunciations.
 
+### Project Presentation
+
+<source>
+  https://www.loom.com/share/a013c0aaf8e74209b629fc3896503d90
+</source>
+
 ### Tools/Technologies
 
 - React Native Expo
