@@ -7,7 +7,7 @@ import { StatusBar } from "react-native";
 export default function App() {
   return (
     <Providers>
-      <StatusBar />
+      <StatusBar barStyle="light-content" />
       <Routes />
     </Providers>
   );

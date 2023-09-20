@@ -15,6 +15,7 @@ import { FullScreenLoading } from "@components/FullScreenLoading";
 import { Tabs } from "@interfaces/index";
 import { TabBar } from "@components/TabBar";
 import keys from "@constants/keys";
+import { LogoutIcon } from "@components/LogoutIcon";
 
 const numColumns = 3;
 
@@ -27,6 +28,7 @@ function Home() {
     pageSize,
     loadFavorites,
     loadHistory,
+    setCredentials,
   } = useAppData();
 
   const [page, setPage] = useState(1);
@@ -82,6 +84,10 @@ function Home() {
     });
   };
 
+  const logout = () => {
+    setCredentials(null);
+  };
+
   const handleClear = async () => {
     await AsyncStorage.removeItem(
       activeTab === "Favorites" ? keys.favorites : keys.history
@@ -120,7 +126,11 @@ function Home() {
         ref={flatlistRef}
         ListHeaderComponent={() => {
           return (
-            <View mt="24px">
+            <View mt={isAndroid ? "24px" : "48px"}>
+              <LogoutIcon
+                style={{ marginLeft: 16, marginTop: 16 }}
+                onPress={logout}
+              />
               <TabBar
                 onPress={(tab) => {
                   setActiveTab(tab);
@@ -129,7 +139,7 @@ function Home() {
               />
               <View
                 justifyContent="space-between"
-                mt={isAndroid ? 4 : top * 2}
+                mt={isAndroid ? 4 : top}
                 mb="24px"
                 pl="16px"
                 pr="16px"

@@ -58,6 +58,7 @@ function TabBar({
       borderWidth={1}
       borderColor="emerald.500"
       borderRadius="10px"
+      mt="24px"
     >
       {tabs.map((tab) => (
         <TabItem key={tab} onPress={onPress} enabled={activeTab === tab}>

@@ -2,14 +2,13 @@
 
 export enum Screens {
   Home = 'Home',
-  ListDetails = 'ListDetails',
+  Login = 'Login',
   Modal = 'Modal'
-
 }
 
 export type StackParams = {
   [Screens.Home]: undefined;  
-  [Screens.ListDetails]: undefined;  
+  [Screens.Login]: undefined;  
   [Screens.Modal]: {
     word: string;
   };  

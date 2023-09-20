@@ -36,7 +36,6 @@ export function modalAnimateConfig({
 }
 
 export const ModalSettings = {
-  presentation: 'transparentModal',
   gestureEnabled: Platform.OS === 'ios',
   cardOverlayEnabled: true,
   animationEnabled: true,

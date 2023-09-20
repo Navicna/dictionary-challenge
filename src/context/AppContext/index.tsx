@@ -1,6 +1,10 @@
 import React, { ReactNode, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import keys from "@constants/keys";
+import { Credentials } from "@interfaces/index";
+import { AppState, AppStateStatus } from "react-native";
+import { useToast } from "native-base";
+import { isDateLessThanOrEqualToNextDay } from "@utils/date";
 
 interface AppContext {
   wordList: string[] | null;
@@ -10,6 +14,8 @@ interface AppContext {
   favoriteList: string[];
   loadHistory(): Promise<string[]>;
   historyList: string[];
+  credentials: Credentials | null;
+  setCredentials: (credentials: Credentials | null) => void;
 }
 
 const AppContext = React.createContext<AppContext>({
@@ -20,14 +26,20 @@ const AppContext = React.createContext<AppContext>({
   favoriteList: [],
   loadHistory: async () => [""],
   historyList: [],
+  credentials: null,
+  setCredentials: (credentials: Credentials | null) => {},
 });
 
 const AppProvider = ({ children }: { children: ReactNode }) => {
+  const [credentials, setCredentials] = useState<Credentials | null>(null);
+
   const [wordList, setWordsList] = useState<string[] | null>(null);
   const [favoriteList, setFavoritesList] = useState<string[]>([]);
   const [historyList, setHistoryList] = useState<string[]>([]);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const toast = useToast();
 
   const pageSize = 96;
 
@@ -82,6 +94,38 @@ const AppProvider = ({ children }: { children: ReactNode }) => {
     loadFavorites();
   }, []);
 
+  useEffect(() => {
+    const validateToken = async () => {
+      if (!credentials) {
+        return;
+      }
+
+      const valid = isDateLessThanOrEqualToNextDay(credentials.createdAt);
+
+      if (valid) {
+        return;
+      }
+
+      setCredentials(null);
+      toast.show({
+        description: "Sua sessão expirou!",
+        placement: "top",
+      });
+    };
+
+    const handleAppStateChange = async (nextAppState: AppStateStatus) => {
+      if (nextAppState === "active") {
+        validateToken();
+      }
+    };
+
+    const subscribe = AppState.addEventListener("change", handleAppStateChange);
+
+    return () => {
+      subscribe.remove();
+    };
+  }, []);
+
   const defaultContext = {
     wordList,
     pageSize,
@@ -90,6 +134,8 @@ const AppProvider = ({ children }: { children: ReactNode }) => {
     favoriteList,
     loadHistory,
     historyList,
+    credentials,
+    setCredentials,
   };
 
   return (
