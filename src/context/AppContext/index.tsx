@@ -5,6 +5,7 @@ import { Credentials } from "@interfaces/index";
 import { AppState, AppStateStatus } from "react-native";
 import { useToast } from "native-base";
 import { isDateLessThanOrEqualToNextDay } from "@utils/date";
+import { FullScreenLoading } from "@components/FullScreenLoading";
 
 interface AppContext {
   wordList: string[] | null;
@@ -86,6 +87,40 @@ const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const validateToken = async () => {
+    setIsLoading(true);
+    if (!credentials) {
+      const storedCredentials = await AsyncStorage.getItem(keys.credentials);
+
+      if (storedCredentials) {
+        const parsedCredentials: Credentials = JSON.parse(storedCredentials);
+
+        const valid = isDateLessThanOrEqualToNextDay(
+          parsedCredentials.createdAt
+        );
+        if (valid) {
+          setCredentials(parsedCredentials);
+        }
+      }
+      setIsLoading(false);
+      return;
+    }
+
+    const valid = isDateLessThanOrEqualToNextDay(credentials.createdAt);
+
+    if (valid) {
+      setIsLoading(false);
+      return;
+    }
+
+    setCredentials(null);
+    toast.show({
+      description: "Session expired!",
+      placement: "top",
+    });
+    setIsLoading(false);
+  };
+
   useEffect(() => {
     handleReadJSONFile();
   }, []);
@@ -95,34 +130,10 @@ const AppProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    const validateToken = async () => {
-      if (!credentials) {
-        const storedCredentials = await AsyncStorage.getItem(keys.credentials);
-        if (storedCredentials) {
-          const parsedCredentials: Credentials = JSON.parse(storedCredentials);
-          const valid = isDateLessThanOrEqualToNextDay(
-            parsedCredentials.createdAt
-          );
-          if (valid) {
-            setCredentials(parsedCredentials);
-          }
-        }
-        return;
-      }
+    validateToken();
+  }, []);
 
-      const valid = isDateLessThanOrEqualToNextDay(credentials.createdAt);
-
-      if (valid) {
-        return;
-      }
-
-      setCredentials(null);
-      toast.show({
-        description: "Session expired!",
-        placement: "top",
-      });
-    };
-
+  useEffect(() => {
     const handleAppStateChange = async (nextAppState: AppStateStatus) => {
       if (nextAppState === "active") {
         validateToken();
@@ -147,6 +158,10 @@ const AppProvider = ({ children }: { children: ReactNode }) => {
     credentials,
     setCredentials,
   };
+
+  if (isLoading) {
+    return <FullScreenLoading />;
+  }
 
   return (
     <AppContext.Provider value={defaultContext}>{children}</AppContext.Provider>

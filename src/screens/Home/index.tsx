@@ -3,7 +3,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
-import { FlatList as RNFlatList, TouchableOpacity } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList as RNFlatList,
+  TouchableOpacity,
+} from "react-native";
 import { fullWidth, isAndroid } from "@constants/metrics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAppData } from "@context/AppContext";
@@ -36,6 +40,8 @@ function Home() {
   const [activeTab, setActiveTab] = useState<Tabs>("Word list");
   const [words, setWords] = useState<string[] | null>([]);
 
+  const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
+
   const isFocused = useIsFocused();
 
   const { navigate } = useNavigation<StackNavigationProp<StackParams>>();
@@ -51,19 +57,24 @@ function Home() {
   };
 
   const handleLoadWords = () => {
-    const startIndex = page * pageSize;
-    const endIndex = startIndex + pageSize;
+    try {
+      setIsLoadingMore(true);
+      const startIndex = page * pageSize;
+      const endIndex = startIndex + pageSize;
 
-    if (!wordList) {
-      return;
-    }
+      if (!wordList) {
+        return;
+      }
 
-    const actualData = wordList.slice(startIndex, endIndex);
+      const actualData = wordList.slice(startIndex, endIndex);
 
-    if (words) {
-      return setWords([...words, ...actualData]);
-    } else {
-      return setWords(actualData);
+      if (words) {
+        return setWords([...words, ...actualData]);
+      } else {
+        return setWords(actualData);
+      }
+    } finally {
+      setIsLoadingMore(false);
     }
   };
 
@@ -185,17 +196,11 @@ function Home() {
             </WordContainer>
           );
         }}
-        onScroll={(event) => {
-          const { layoutMeasurement, contentOffset, contentSize } =
-            event.nativeEvent;
-          const isAtBottom =
-            layoutMeasurement.height + contentOffset.y >= contentSize.height;
-          if (isAtBottom) {
-            handleLoadNextPage();
-          }
-        }}
+        onEndReached={handleLoadNextPage}
+        onEndReachedThreshold={1.5}
       />
       <ArrowButton onPress={scrollToTop} />
+      {isLoadingMore && <ActivityIndicator />}
     </View>
   );
 }
