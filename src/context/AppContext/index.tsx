@@ -108,7 +108,7 @@ const AppProvider = ({ children }: { children: ReactNode }) => {
 
       setCredentials(null);
       toast.show({
-        description: "Sua sessão expirou!",
+        description: "Session expired!",
         placement: "top",
       });
     };

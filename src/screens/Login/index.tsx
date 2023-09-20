@@ -43,7 +43,7 @@ function Login() {
       setCredentials(credentials);
       setIsLoading(false);
       toast.show({
-        description: "Olá Seja Bem Vindo!",
+        description: "Welcome!",
         placement: "top",
       });
     }

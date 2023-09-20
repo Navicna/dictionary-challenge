@@ -25,7 +25,15 @@ function WordContainer({
       justifyContent="center"
       p="5"
     >
-      <TouchableOpacity onPress={handlePressWord}>
+      <TouchableOpacity
+        hitSlop={{
+          top: 10,
+          left: 50,
+          bottom: 10,
+          right: 50,
+        }}
+        onPress={handlePressWord}
+      >
         <Text
           fontSize="xl"
           color="purple.500"
