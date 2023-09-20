@@ -95,8 +95,9 @@ function Home() {
     });
   };
 
-  const logout = () => {
+  const logout = async () => {
     setCredentials(null);
+    await AsyncStorage.removeItem(keys.credentials);
   };
 
   const handleClear = async () => {
