@@ -1,7 +1,7 @@
-import moment from 'moment';
+import moment, {Moment} from 'moment';
 
 
-const isDateLessThanOrEqualToNextDay = (inputDate: string): boolean => {
+const isDateLessThanOrEqualToNextDay = (inputDate: Moment): boolean => {
   if (!inputDate) {
     return false;
   }
@@ -13,4 +13,7 @@ const isDateLessThanOrEqualToNextDay = (inputDate: string): boolean => {
   return now.isSameOrBefore(nextDayDate);
 };
 
-export { isDateLessThanOrEqualToNextDay }
+const now = (): Moment => moment();
+  
+
+export { isDateLessThanOrEqualToNextDay, now }

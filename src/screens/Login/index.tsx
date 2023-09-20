@@ -13,6 +13,7 @@ import { useAppData } from "@context/AppContext";
 import { Credentials } from "@interfaces/index";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import keys from "@constants/keys";
+import { now } from "@utils/date";
 
 type LoginDataForm = {
   user: string;
@@ -40,13 +41,18 @@ function Login() {
       const credentials: Credentials = {
         user: data.user,
         token: generateRandomToken(),
-        createdAt: new Date(),
+        createdAt: now(),
       };
       await AsyncStorage.setItem(keys.credentials, JSON.stringify(credentials));
       setCredentials(credentials);
       setIsLoading(false);
       toast.show({
         description: "Welcome!",
+        placement: "top",
+      });
+    } else {
+      toast.show({
+        description: "User or password is incorrect.",
         placement: "top",
       });
     }
