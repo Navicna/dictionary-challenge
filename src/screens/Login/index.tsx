@@ -11,6 +11,8 @@ import generateRandomToken from "@utils/generateRandomToken";
 import { version } from "../../../package.json";
 import { useAppData } from "@context/AppContext";
 import { Credentials } from "@interfaces/index";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import keys from "@constants/keys";
 
 type LoginDataForm = {
   user: string;
@@ -40,6 +42,7 @@ function Login() {
         token: generateRandomToken(),
         createdAt: new Date(),
       };
+      await AsyncStorage.setItem(keys.credentials, JSON.stringify(credentials));
       setCredentials(credentials);
       setIsLoading(false);
       toast.show({

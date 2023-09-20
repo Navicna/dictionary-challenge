@@ -97,6 +97,16 @@ const AppProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const validateToken = async () => {
       if (!credentials) {
+        const storedCredentials = await AsyncStorage.getItem(keys.credentials);
+        if (storedCredentials) {
+          const parsedCredentials: Credentials = JSON.parse(storedCredentials);
+          const valid = isDateLessThanOrEqualToNextDay(
+            parsedCredentials.createdAt
+          );
+          if (valid) {
+            setCredentials(parsedCredentials);
+          }
+        }
         return;
       }
 
