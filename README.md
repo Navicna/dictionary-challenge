@@ -23,7 +23,7 @@ Application developed with the purpose of displaying an extensive list of Englis
 #### You need to clone the repo into your machine, so:
 
 ```bash
-git clone https://github.com/Navicna/challenge-truckpag-victor
+git clone https://github.com/Navicna/dictionary-challenge
 ```
 
 #### After clone the repo you'll enter in the cloned repo folder and, do: 
